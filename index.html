@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Class 12 maths learning game: play interactive Labs, beat boss Quests and train with endless generated questions.">
+<title>Class 12 Math Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky stats bar on top; left rail = today's progress + level picker; right = the arena (question, live graph, options, hint ladder). Stacks on phones. */
+:root{
+  --bg:#F2F5FB; --panel:#FFFFFF; --ink:#101B3B; --muted:#55628A; --line:#D5DDEE; --grid:#E3E9F6;
+  --curve:#2B55F5; --curve-fill:rgba(43,85,245,.17); --warm:#E85D0C; --warm-fill:rgba(232,93,12,.2);
+  --good:#0E8A55; --good-bg:#E1F5EB; --bad:#C93232; --bad-bg:#FBE6E6; --chip:#E6EBFA; --on-accent:#FFFFFF; --sea:#DCE8FA; --land:#D6EAD3; --hill:#BCDDB8; --tree:#4E9A63; --road:#A8895A;
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:'DM Sans','Segoe UI',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1230; --panel:#131C42; --ink:#E9EEFF; --muted:#9DAAD3; --line:#26336B; --grid:#1A2658;
+  --curve:#86A2FF; --curve-fill:rgba(134,162,255,.22); --warm:#FF9552; --warm-fill:rgba(255,149,82,.22);
+  --good:#4FD39A; --good-bg:#10362B; --bad:#FF8080; --bad-bg:#3C1A22; --chip:#1C2958; --on-accent:#0B1230; --sea:#0E1840; --land:#17382F; --hill:#215043; --tree:#5CC08A; --road:#C9A66B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1230; --panel:#131C42; --ink:#E9EEFF; --muted:#9DAAD3; --line:#26336B; --grid:#1A2658;
+  --curve:#86A2FF; --curve-fill:rgba(134,162,255,.22); --warm:#FF9552; --warm-fill:rgba(255,149,82,.22);
+  --good:#4FD39A; --good-bg:#10362B; --bad:#FF8080; --bad-bg:#3C1A22; --chip:#1C2958; --on-accent:#0B1230; --sea:#0E1840; --land:#17382F; --hill:#215043; --tree:#5CC08A; --road:#C9A66B; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 40px}
+.wrap{max-width:1080px;margin:0 auto}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.15}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--curve);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-size:1.35rem;letter-spacing:-.01em}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--curve);color:var(--on-accent);display:grid;place-items:center;font-size:1.5rem;font-family:Georgia,serif;font-style:italic;line-height:1}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1.5px solid var(--line);border-radius:999px;padding:5px 12px;font-weight:700;font-size:.95rem}
+.chip svg{width:18px;height:18px}
+.chip small{font-weight:500;color:var(--muted)}
+
+/* layout */
+.grid{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:900px){.grid{grid-template-columns:320px minmax(0,1fr);align-items:start}.rail{position:sticky;top:14px}}
+.card{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:16px}
+.rail{display:flex;flex-direction:column;gap:14px;min-width:0}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+/* today */
+.today h2{font-size:1.15rem;margin:4px 0 10px}
+.bar{height:12px;border-radius:99px;background:var(--chip);overflow:hidden}
+.bar>span{display:block;height:100%;background:var(--curve);border-radius:99px;transition:width .4s}
+.today.locked .bar>span{background:var(--good)}
+.today p{margin:8px 0 0;font-size:.9rem;color:var(--muted)}
+.rankrow{display:flex;justify-content:space-between;gap:8px;margin-top:12px;font-size:.88rem}
+.rankrow b{font-family:var(--f-display)}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.badge{background:var(--chip);border-radius:6px;padding:2px 8px;font-size:.78rem;font-weight:700}
+.daily-btn{margin-top:12px;width:100%;border:0;border-radius:10px;padding:11px 14px;font-weight:700;background:var(--warm);color:var(--on-accent);text-align:left;display:flex;justify-content:space-between;gap:8px}
+.daily-btn small{font-weight:500;opacity:.9}
+
+/* levels */
+.levels{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity}
+@media(min-width:900px){.levels{flex-direction:column;overflow:visible}}
+.lv{flex:0 0 auto;min-width:168px;text-align:left;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;scroll-snap-align:start;display:grid;gap:4px}
+@media(min-width:900px){.lv{min-width:0}}
+.lv[aria-current="true"]{border-color:var(--curve);box-shadow:0 0 0 2px var(--curve) inset}
+.lv b{font-family:var(--f-display);font-size:1rem}
+.lv .tg{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);letter-spacing:.04em}
+.dots{display:flex;gap:4px;align-items:center}
+.dots i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--muted);display:block}
+.dots i.on{background:var(--curve);border-color:var(--curve)}
+.dots em{font-style:normal;font-size:.72rem;font-weight:700;color:var(--good);margin-left:4px}
+
+/* play */
+.play{min-width:0}
+.qhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.tag{background:var(--warm-fill);color:var(--ink);border-radius:6px;padding:2px 9px;font-family:var(--f-mono);font-size:.74rem;letter-spacing:.04em}
+.worth{margin-left:auto;font-weight:700;color:var(--curve)}
+.qtext{font-size:1.2rem;margin:6px 0 12px;line-height:1.7;overflow-wrap:anywhere}
+.int{display:inline-flex;align-items:center;vertical-align:middle;margin-right:4px}
+.sg{font-size:2.1em;line-height:1;font-family:Georgia,'Times New Roman',serif;font-weight:400}
+.lim{display:inline-flex;flex-direction:column;justify-content:space-between;font-size:.62em;height:2.7em;margin-left:1px;line-height:1.1}
+sup{font-size:.7em;line-height:0}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.92em;line-height:1.2;margin:0 2px}
+.fr i{font-style:normal;padding:0 3px}
+.fr i:first-child{border-bottom:1.5px solid currentColor}
+figure.graph{margin:0 0 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);padding:4px}
+figure.graph svg{display:block;width:100%;height:auto}
+.g-grid{stroke:var(--grid);stroke-width:1}
+.g-axis{stroke:var(--ink);stroke-width:1.4;opacity:.7}
+.g-lbl{fill:var(--muted);font-family:var(--f-mono);font-size:15px}
+.g-lim{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:3 4}
+.g-pos{fill:var(--curve-fill)}.g-neg{fill:var(--warm-fill)}
+.g-c1{fill:none;stroke:var(--curve);stroke-width:3;stroke-linejoin:round}
+.g-c2{fill:none;stroke:var(--warm);stroke-width:3;stroke-linejoin:round}
+.g-dash{stroke-dasharray:7 6}
+.g-sw1{fill:var(--curve)}.g-sw2{fill:var(--warm)}
+.g-leg{fill:var(--ink);font-family:var(--f-body);font-size:15px;font-weight:500}
+
+.opts{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:560px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{text-align:left;border:1.5px solid var(--line);background:var(--panel);border-radius:10px;padding:12px 14px;font-size:1.08rem;min-height:3.4rem;display:flex;align-items:center;gap:10px;overflow-wrap:anywhere}
+.opt:hover:not(:disabled){border-color:var(--curve)}
+.opt .k{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);flex:0 0 auto}
+.opt.ok{background:var(--good-bg);border-color:var(--good)}
+.opt.bad{background:var(--bad-bg);border-color:var(--bad);opacity:.8}
+.opt:disabled{cursor:default}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{border:1.5px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 14px;font-weight:700}
+.btn:hover:not(:disabled){border-color:var(--curve)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.primary{background:var(--curve);color:var(--on-accent);border-color:var(--curve)}
+.btn.armed{border-color:var(--bad);color:var(--bad)}
+.ladder{margin:14px 0 0;display:grid;gap:8px}
+.hint{border-left:4px solid var(--warm);background:var(--chip);border-radius:0 10px 10px 0;padding:9px 12px;font-size:.98rem}
+.hint b{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;display:block;color:var(--muted)}
+.fb{margin-top:14px;border-radius:10px;padding:10px 14px;font-weight:700}
+.fb.ok{background:var(--good-bg);color:var(--ink);border:1.5px solid var(--good)}
+.fb.bad{background:var(--bad-bg);border:1.5px solid var(--bad)}
+.fb.info{background:var(--chip)}
+.solution p{margin:6px 0;font-weight:400}
+.debrief{margin-top:14px;border:1.5px dashed var(--line);border-radius:10px;padding:12px 14px}
+.debrief h4{font-size:.95rem;margin:10px 0 4px}
+.debrief h4:first-child{margin-top:0}
+.debrief p,.debrief ul{margin:0;font-size:.95rem}
+.debrief ul{padding-left:1.2rem}
+.sum{text-align:center;padding:10px 0}
+.sum h2{font-size:1.8rem;margin:6px 0}
+.foot{margin-top:18px;font-size:.82rem;color:var(--muted);max-width:70ch}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:700;z-index:20;max-width:calc(100vw - 32px);opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- quest additions ---- */
+.stage{min-width:0}
+.sub{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+.viewhead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.viewhead h2{font-size:1.6rem}
+.viewhead .sub{max-width:34ch}
+.back{border:0;background:var(--chip);border-radius:8px;padding:6px 12px;font-weight:700;margin-bottom:12px}
+.map-wrap{max-width:460px;margin:0 auto;border:1.5px solid var(--line);border-radius:16px;overflow:hidden;background:var(--sea)}
+.map{display:block;width:100%;height:auto}
+.m-land{fill:var(--land)}.m-hill{fill:var(--hill)}.m-tree{fill:var(--tree)}
+.m-road{fill:none;stroke:var(--road);stroke-width:5;stroke-linecap:round;stroke-dasharray:1 11}
+.m-road.done{stroke:var(--curve);stroke-dasharray:none;stroke-width:5}
+.m-sym{fill:var(--muted);opacity:.35;font-family:Georgia,serif;font-style:italic;font-size:22px}
+.m-castle rect{fill:var(--ink);opacity:.75}
+.map .tg{fill:var(--muted);font-family:var(--f-mono);font-size:9.5px;letter-spacing:.04em}
+.node{cursor:pointer;outline:none}
+.node:focus-visible .base{stroke:var(--warm);stroke-width:4}
+.node .base{stroke-width:3}
+.node.locked .base{fill:var(--chip);stroke:var(--line)}
+.node.open .base{fill:var(--panel);stroke:var(--curve);stroke-width:3.5}
+.node.clear .base{fill:var(--curve);stroke:var(--curve)}
+.node .n{fill:var(--ink);font-family:var(--f-display);font-weight:800;font-size:22px;text-anchor:middle}
+.node.clear .n{fill:var(--on-accent)}
+.node .t{fill:var(--ink);font-family:var(--f-display);font-weight:700;font-size:14.5px;paint-order:stroke;stroke:var(--land);stroke-width:4px;stroke-linejoin:round}
+.node.locked .t{fill:var(--muted)}
+.pulse{fill:none;stroke:var(--warm);stroke-width:3;transform-box:fill-box;transform-origin:center;animation:pulse 1.7s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.9);opacity:.95}100%{transform:scale(1.5);opacity:0}}
+.nodehead{display:flex;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.nodehead h2{font-size:1.5rem;margin:2px 0}
+.monwrap{width:96px;flex:0 0 auto}.monwrap.big{width:130px;margin:0 auto 6px}
+.mon{display:block;width:100%;height:auto}
+.starrow{display:flex;gap:4px;margin-top:8px}.starrow.big{justify-content:center;margin:8px 0}
+.steps{display:grid;gap:10px}
+.step{display:flex;align-items:center;gap:12px;text-align:left;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
+.step:hover:not(:disabled){border-color:var(--curve)}
+.step:disabled{opacity:.55;cursor:default}
+.stepn{width:34px;height:34px;border-radius:50%;background:var(--curve);color:var(--on-accent);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;flex:0 0 auto}
+.stepx{flex:1;min-width:0;display:grid}
+.stepx small{color:var(--muted);font-size:.85rem}
+.stepst{font-weight:700;font-size:.9rem;color:var(--curve);flex:0 0 auto}
+.labcard{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:16px}
+.labcard h2{font-size:1.5rem;margin:2px 0}
+.labcard figure.graph{margin-top:12px}
+.twin{display:grid;gap:6px}
+.read{display:flex;gap:6px 18px;flex-wrap:wrap;background:var(--chip);border-radius:10px;padding:10px 12px;font-size:.98rem;margin-bottom:12px}
+.controls{display:grid;gap:12px;margin-bottom:12px}
+@media(min-width:560px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ctl{display:grid;gap:4px}
+.ctll{font-weight:500;font-size:.92rem;color:var(--muted)}
+.ctll b{color:var(--ink);margin-left:6px}
+input[type=range]{width:100%;accent-color:var(--curve);height:32px}
+.seg{display:flex;gap:6px}
+.segb{flex:1;border:1.5px solid var(--line);background:var(--panel);border-radius:8px;padding:8px;font-weight:700}
+.segb.on{background:var(--curve);border-color:var(--curve);color:var(--on-accent)}
+.goal{display:flex;gap:10px;align-items:center;border:1.5px dashed var(--line);border-radius:10px;padding:10px 12px;font-weight:500}
+.goal.ok{border-style:solid;border-color:var(--good);background:var(--good-bg)}
+.chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--muted);display:grid;place-items:center;font-weight:800;flex:0 0 auto;color:var(--good)}
+.goal.ok .chk{border-color:var(--good)}
+.theory{margin-top:12px;border-left:4px solid var(--good);background:var(--chip);border-radius:0 10px 10px 0;padding:10px 14px}
+.theory p{margin:6px 0}
+.g-rect{fill:var(--curve-fill);stroke:var(--curve)}
+.g-strip{stroke:var(--curve);stroke-width:1.4;opacity:.55}
+.g-box{fill:none;stroke:var(--ink);stroke-width:1.4;stroke-dasharray:5 5;opacity:.6}
+.g-dot{fill:var(--curve);stroke:var(--panel);stroke-width:2}
+.g-dot2{fill:var(--warm);stroke:var(--panel);stroke-width:2}
+.playcard{padding:16px}
+.battle{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.battle .monwrap{width:80px}
+.bstat{flex:1;min-width:0;display:grid;gap:8px}
+.hpbar{height:14px;border-radius:99px;background:var(--chip);overflow:hidden;border:1.5px solid var(--line)}
+.hpbar>span{display:block;height:100%;background:var(--bad);transition:width .45s}
+.hearts{display:flex;gap:3px}
+.combo{background:var(--warm);color:var(--on-accent);border-radius:6px;padding:2px 9px;font-weight:800;font-size:.85rem}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="logo" aria-hidden="true">∫</span>Class 12 Math Quest</div>
+    <div class="chips" id="chips"></div>
+  </header>
+  <main class="grid">
+    <aside class="rail"><section class="card today" id="today"></section></aside>
+    <section class="stage" id="main"></section>
+  </main>
+  <p class="foot">Every Quest and Arena question is generated fresh, so you can keep practising until the idea clicks. Progress is saved in this browser.</p>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<!-- Engine first, then the chapter registry, then one script per chapter, then the game. -->
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+function mulberry(seed){var a=seed>>>0;return function(){a=(a+0x6D2B79F5)|0;var t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296}}
+function hash(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function ri(r,a,b){return a+Math.floor(r()*(b-a+1))}
+function pick(r,arr){return arr[Math.floor(r()*arr.length)]}
+function shuffle(r,arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function gcd(a,b){return b?gcd(b,a%b):Math.abs(a)}
+function Fr(n,d){d=d===undefined?1:d;if(d<0){n=-n;d=-d}var g=gcd(n,d)||1;return{n:n/g,d:d/g}}
+function fadd(x,y){return Fr(x.n*y.d+y.n*x.d,x.d*y.d)}
+function fsub(x,y){return fadd(x,Fr(-y.n,y.d))}
+function fmul(x,y){return Fr(x.n*y.n,x.d*y.d)}
+function fval(x){return x.n/x.d}
+function fh(x){var s=x.n<0?'−':'';var a=Math.abs(x.n);return x.d===1?s+a:s+'<span class="fr"><i>'+a+'</i><i>'+x.d+'</i></span>'}
+function sup(e){return e===1?'':'<sup>'+e+'</sup>'}
+function poly(terms){
+  var t=terms.filter(function(o){return o.c!==0}).sort(function(a,b){return b.e-a.e});
+  return t.map(function(o,i){
+    var a=Math.abs(o.c),body=o.e===0?''+a:(a===1?'':a)+'x'+sup(o.e);
+    if(i===0)return (o.c<0?'−':'')+body;
+    return ' '+(o.c<0?'−':'+')+' '+body;
+  }).join('')||'0';
+}
+function intg(a,b){return '<span class="int"><span class="sg">∫</span><span class="lim"><span>'+b+'</span><span>'+a+'</span></span></span>'}
+var INT0='<span class="int"><span class="sg">∫</span></span>';
+function finishOpts(r,correct,wrongs){var all=shuffle(r,[correct].concat(wrongs));return{options:all,correct:all.indexOf(correct)}}
+function strOpts(r,correct,wrongs){
+  var seen={};seen[correct]=1;var out=[];
+  for(var i=0;i<wrongs.length&&out.length<3;i++){if(!seen[wrongs[i]]){seen[wrongs[i]]=1;out.push(wrongs[i])}}
+  return finishOpts(r,correct,out);
+}
+function fracOpts(r,c,wr){
+  var fill=[fmul(c,Fr(2)),fmul(c,Fr(1,2)),fadd(c,Fr(1)),fsub(c,Fr(1)),fmul(c,Fr(-1)),fadd(c,Fr(1,2)),fmul(c,Fr(3,2)),fmul(c,Fr(2,3)),fadd(c,Fr(2)),fsub(c,Fr(1,2))];
+  var all=wr.concat(shuffle(r,fill)).map(fh);
+  return strOpts(r,fh(c),all);
+}
+
+/* ---------- numeric helpers ---------- */
+function numInt(f,a,b){var n=400,h=(b-a)/n,s=f(a)+f(b);for(var i=1;i<n;i++)s+=f(a+i*h)*(i%2?4:2);return s*h/3}
+function fmt(v){return (Math.round(v*100)/100).toString().replace('-','−')}
+function fmt3(v){return (Math.round(v*1000)/1000).toString().replace('-','−')}
+function rd(items){return items.map(function(it){return '<span>'+it+'</span>'}).join('')}
+
+
+</script>
+<script>
+"use strict";
+/* ---------- graph ---------- */
+function niceStep(range){var raw=range/6,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return(m<1.5?1:m<3.5?2:m<7.5?5:10)*p}
+function nf(v){var s=(Math.round(v*100)/100).toString();return s.replace('-','−')}
+function drawGraph(g,reveal){
+  var W=640,H=340,L=54,R=18,T=30,B=36,pw=W-L-R,ph=H-T-B,N=260;
+  var fns=g.fns.concat(reveal?(g.reveal||[]):[]);
+  var ymin=0,ymax=0;
+  fns.forEach(function(o){for(var i=0;i<=N;i++){var x=g.xmin+(g.xmax-g.xmin)*i/N,y=o.f(x);if(isFinite(y)){if(y<ymin)ymin=y;if(y>ymax)ymax=y}}});
+  if(ymax-ymin<1e-9)ymax=1;
+  var pad=(ymax-ymin)*.1;ymin-=pad;ymax+=pad;if(g.yfix){ymin=g.yfix[0];ymax=g.yfix[1]}
+  function sx(x){return L+(x-g.xmin)/(g.xmax-g.xmin)*pw}
+  function sy(y){return T+(ymax-y)/(ymax-ymin)*ph}
+  function P(pts){return 'M'+pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join('L')}
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+g.alt+'"><defs><clipPath id="plotclip"><rect x="'+L+'" y="'+T+'" width="'+pw+'" height="'+ph+'"/></clipPath></defs>';
+  var xt=[];
+  if(g.xticks){xt=g.xticks}else{var st=niceStep(g.xmax-g.xmin);for(var k=Math.ceil(g.xmin/st-1e-9);k*st<=g.xmax+1e-9;k++)xt.push({v:k*st,l:nf(k*st)})}
+  xt.forEach(function(t){s+='<line class="g-grid" x1="'+sx(t.v)+'" x2="'+sx(t.v)+'" y1="'+T+'" y2="'+(T+ph)+'"/><text class="g-lbl" x="'+sx(t.v)+'" y="'+(H-10)+'" text-anchor="middle">'+t.l+'</text>'});
+  var ys=niceStep(ymax-ymin);
+  for(var j=Math.ceil(ymin/ys-1e-9);j*ys<=ymax+1e-9;j++){var yv=j*ys;s+='<line class="g-grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+sy(yv)+'" y2="'+sy(yv)+'"/><text class="g-lbl" x="'+(L-6)+'" y="'+(sy(yv)+4)+'" text-anchor="end">'+nf(yv)+'</text>'}
+  if(g.xmin<0&&g.xmax>0)s+='<line class="g-axis" x1="'+sx(0)+'" x2="'+sx(0)+'" y1="'+T+'" y2="'+(T+ph)+'"/>';
+  s+='<line class="g-axis" x1="'+L+'" x2="'+(W-R)+'" y1="'+sy(0)+'" y2="'+sy(0)+'"/>';
+  s+='<g clip-path="url(#plotclip)">';
+  if(g.shade){
+    var sh=g.shade,M=140,xs=[];
+    for(var i=0;i<=M;i++)xs.push(sh.a+(sh.b-sh.a)*i/M);
+    if(sh.mode==='between'){
+      var tp=xs.map(function(x){return[sx(x),sy(sh.top(x))]}),bt=xs.map(function(x){return[sx(x),sy(sh.bottom(x))]}).reverse();
+      s+='<path class="g-pos" d="'+P(tp.concat(bt))+'Z"/>';
+    }else{
+      var up=xs.map(function(x){return[sx(x),sy(Math.max(sh.f(x),0))]}),dn=xs.map(function(x){return[sx(x),sy(Math.min(sh.f(x),0))]});
+      var z=xs.map(function(x){return[sx(x),sy(0)]}).reverse();
+      s+='<path class="g-pos" d="'+P(up.concat(z))+'Z"/><path class="g-neg" d="'+P(dn.concat(z))+'Z"/>';
+    }
+    s+='<line class="g-lim" x1="'+sx(sh.a)+'" x2="'+sx(sh.a)+'" y1="'+T+'" y2="'+(T+ph)+'"/><line class="g-lim" x1="'+sx(sh.b)+'" x2="'+sx(sh.b)+'" y1="'+T+'" y2="'+(T+ph)+'"/>';
+  }
+  if(g.extra)s+=g.extra(sx,sy,P);
+  fns.forEach(function(o){
+    var pts=[];for(var i=0;i<=N;i++){var x=g.xmin+(g.xmax-g.xmin)*i/N,y=o.f(x);if(isFinite(y))pts.push([sx(x),sy(y)])}
+    s+='<path class="g-'+o.cls+(o.dash?' g-dash':'')+'" d="'+P(pts)+'"/>';
+  });
+  s+='</g>';
+  var lx=L+6;
+  fns.forEach(function(o){
+    s+='<rect class="g-sw'+o.cls.slice(1)+'" x="'+lx+'" y="8" width="14" height="5" rx="2"/><text class="g-leg" x="'+(lx+20)+'" y="15">'+o.label+'</text>';
+    lx+=o.label.length*8+44;
+  });
+  return s+'</svg>';
+}
+
+
+</script>
+<script>
+"use strict";
+var MONCOL=['var(--curve)','var(--good)','var(--warm)','var(--bad)','var(--curve)','var(--warm)'];
+function mcol(k){return MONCOL[(k-1)%MONCOL.length]}
+/* ---------- icons ---------- */
+function flame(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-10z" fill="var(--warm)"/></svg>'}
+function starSvg(on,sz){return '<svg viewBox="0 0 24 24" width="'+sz+'" height="'+sz+'" aria-hidden="true"><polygon points="12,2 15,9 22,9.5 16.5,14 18.5,21.5 12,17.5 5.5,21.5 7.5,14 2,9.5 9,9" fill="'+(on?'var(--warm)':'none')+'" stroke="'+(on?'var(--warm)':'var(--muted)')+'" stroke-width="1.6" stroke-linejoin="round"/></svg>'}
+function heart(on){return '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="'+(on?'var(--bad)':'none')+'" stroke="'+(on?'var(--bad)':'var(--muted)')+'" stroke-width="1.6"/></svg>'}
+function monster(k,hp){
+  var sp='',i,n=k,cx;
+  for(i=0;i<n;i++){cx=22+76*(i+.5)/n;sp+='<polygon points="'+(cx-6)+',28 '+cx+',8 '+(cx+6)+',28" fill="'+mcol(k)+'"/>'}
+  var dead=hp<=0,eyes=dead?'<path d="M38 52l12 12M50 52l-12 12M70 52l12 12M82 52l-12 12" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>'
+    :'<circle cx="44" cy="58" r="10" fill="var(--panel)"/><circle cx="76" cy="58" r="10" fill="var(--panel)"/><circle cx="46" cy="59" r="4.5" fill="var(--ink)"/><circle cx="74" cy="59" r="4.5" fill="var(--ink)"/>';
+  var mouth=dead?'<path d="M45 84h30" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>':'<path d="M42 80q18 14 36 0" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>';
+  return '<svg viewBox="0 0 120 104" class="mon" aria-hidden="true"><path d="M10 74Q10 24 60 24Q110 24 110 74Q110 100 60 100Q10 100 10 74Z" fill="'+mcol(k)+'" opacity="'+(dead?.45:1)+'"/>'+sp+eyes+mouth+'</svg>';
+}
+
+
+</script>
+<script>
+"use strict";
+/* Shared progress: one points total, one streak, one set of badges for every chapter. */
+var RANKS=[[0,'Rookie'],[200,'Slope Spotter'],[600,'Area Hunter'],[1500,'Equation Hunter'],[3500,'Theorem Rider'],[8000,'Newton Class']];
+var BADGES={first:'First solve',lab:'Lab rat',boss:'Boss slayer',day50:'50 in a day',s3:'3-day streak',s7:'7-day streak',perfect:'Perfect daily'};
+var KEY='mq12-v1',OLDKEY='integral-quest-v2';
+function fresh(){return{points:0,days:{},nodes:{},daily:{},badges:{},total:0}}
+function load(){
+  try{var s=JSON.parse(localStorage.getItem(KEY));if(s&&typeof s==='object'){var f=fresh();for(var k in f)if(!(k in s))s[k]=f[k];return s}}catch(e){}
+  try{var o=JSON.parse(localStorage.getItem(OLDKEY));if(o&&typeof o==='object'){var n=fresh();['points','days','daily','badges','total'].forEach(function(k){if(o[k]!==undefined)n[k]=o[k]});
+    for(var id in (o.nodes||{}))n.nodes['integrals:'+id]=o.nodes[id];return n}}catch(e){}
+  return fresh();
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+var S=load();
+function nk(ch,k){return ch+':'+k}
+function nd(ch,k){var key=nk(ch,k);return S.nodes[key]||(S.nodes[key]={lab:false,stars:0})}
+function nstars(ch,k){return(S.nodes[nk(ch,k)]||{}).stars||0}
+function unlocked(ch,k){return k===1||nstars(ch,k-1)>=1}
+function chStars(c){var t=0;c.levels.forEach(function(L){t+=nstars(c.id,L.id)});return t}
+function dkey(off){var d=new Date();d.setDate(d.getDate()+(off||0));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function streak(){var d=(S.days[dkey(0)]||0)>=50?0:1,s=0;while((S.days[dkey(-d)]||0)>=50){s++;d++}return s}
+function rank(){var i=0;for(var k=0;k<RANKS.length;k++)if(S.points>=RANKS[k][0])i=k;return{i:i,name:RANKS[i][1],next:RANKS[i+1]}}
+function readyChapters(){return MQ.list.filter(function(c){return MQ.chapters[c.id]}).map(function(c){return MQ.chapters[c.id]})}
+var toastT;
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},2800)}
+function award(id){if(!S.badges[id]){S.badges[id]=true;toast('Badge earned: '+BADGES[id]);return true}return false}
+function checkBadges(){
+  if(S.total>=1)award('first');
+  if((S.days[dkey(0)]||0)>=50)award('day50');
+  var s=streak();if(s>=3)award('s3');if(s>=7)award('s7');
+}
+
+</script>
+<script>
+"use strict";
+/* Chapter registry. Each chapter file adds itself with MQ.register({...}).
+   A chapter that has no file yet shows up as "Soon" on the home map. */
+window.MQ={chapters:{},register:function(c){MQ.chapters[c.id]=c}};
+MQ.list=[
+  {id:'relations',num:1,name:'Relations and Functions',unit:'Algebra'},
+  {id:'inverse-trig',num:2,name:'Inverse Trigonometry',unit:'Algebra'},
+  {id:'matrices',num:3,name:'Matrices',unit:'Algebra'},
+  {id:'determinants',num:4,name:'Determinants',unit:'Algebra'},
+  {id:'continuity',num:5,name:'Continuity and Differentiability',unit:'Calculus'},
+  {id:'derivatives',num:6,name:'Applications of Derivatives',unit:'Calculus'},
+  {id:'integrals',num:7,name:'Integrals',unit:'Calculus'},
+  {id:'area',num:8,name:'Applications of Integrals',unit:'Calculus'},
+  {id:'diff-eq',num:9,name:'Differential Equations',unit:'Calculus'},
+  {id:'vectors',num:10,name:'Vector Algebra',unit:'Vectors and 3D'},
+  {id:'3d',num:11,name:'Three Dimensional Geometry',unit:'Vectors and 3D'},
+  {id:'lpp',num:12,name:'Linear Programming',unit:'LPP and Probability'},
+  {id:'probability',num:13,name:'Probability',unit:'LPP and Probability'}
+];
+
+</script>
+<script>
+"use strict";
+/* Chapter 7: Integrals. A chapter file only describes content: question generators, Labs, levels.
+   The game rules (lives, boss, streak, map drawing) live in engine/. */
+(function(){
+/* ---------- question generators ---------- */
+function genL1(r){
+  var n=ri(r,2,5),m=ri(r,1,n-1),A=ri(r,1,4),B=ri(r,1,4)*(r()<.5?-1:1),a=A*(n+1),b=B*(m+1);
+  var f=function(x){return a*Math.pow(x,n)+b*Math.pow(x,m)},Fx=function(x){return A*Math.pow(x,n+1)+B*Math.pow(x,m+1)};
+  var fT=poly([{c:a,e:n},{c:b,e:m}]);
+  var ans=poly([{c:A,e:n+1},{c:B,e:m+1}])+' + C';
+  var o=strOpts(r,ans,[
+    poly([{c:a,e:n+1},{c:b,e:m+1}])+' + C',
+    poly([{c:a*n,e:n-1},{c:b*m,e:m-1}])+' + C',
+    poly([{c:A,e:n},{c:B,e:m}])+' + C',
+    poly([{c:A,e:n+1},{c:-B,e:m+1}])+' + C',
+    poly([{c:a,e:n},{c:b,e:m}])+' + C']);
+  return{kind:'Indefinite integral of a polynomial (power rule)',
+    html:'Find '+INT0+'('+fT+') dx',
+    graph:{xmin:-1.3,xmax:1.3,alt:'Graph of the integrand',fns:[{f:f,cls:'c1',label:'f(x), the integrand'}],reveal:[{f:Fx,cls:'c2',dash:true,label:'F(x), your answer (C = 0)'}]},
+    options:o.options,correct:o.correct,
+    hints:['This is an indefinite integral. You need a function F(x) whose derivative is the expression inside the integral.',
+      'Integrate each term separately with the power rule: ∫ x<sup>k</sup> dx = x<sup>k+1</sup> / (k+1).',
+      'For '+poly([{c:a,e:n}])+': raise the power to '+(n+1)+' and divide by '+(n+1)+'. The coefficient '+a+' ÷ '+(n+1)+' = '+A+'. Do the same for the second term.'],
+    solution:'<p>Apply the power rule to each term.</p><p>'+poly([{c:a,e:n}])+' → '+poly([{c:A,e:n+1}])+'</p><p>'+poly([{c:b,e:m}])+' → '+poly([{c:B,e:m+1}])+'</p><p>Answer: '+ans+'</p>',
+    kindNote:'Direct power rule',
+    methods:['Term-by-term power rule.','Differentiate your answer. If you get back the original expression, it is right. This takes 10 seconds and catches most mistakes.'],
+    exam:'Boards: a 2 to 3 mark question. Never forget + C. CUET: appears as an MCQ with options like the wrong ones above (derivative instead of integral, or forgetting to divide).'};
+}
+function genL2(r){
+  var p=pick(r,[-3,-2,-1,1,2,3,4]),q=ri(r,-4,4),c=ri(r,-3,3),a=ri(r,-2,1),b=a+ri(r,1,3);
+  var f=function(x){return p*x*x+q*x+c};
+  var FF=function(x){return fadd(fadd(Fr(p*x*x*x,3),Fr(q*x*x,2)),Fr(c*x))};
+  var Fb=FF(b),Fa=FF(a),val=fsub(Fb,Fa);
+  var o=fracOpts(r,val,[fadd(Fb,Fa),fsub(Fa,Fb),fadd(val,fmul(Fr(c),Fr(1)))]);
+  var expr=poly([{c:p,e:2},{c:q,e:1},{c:c,e:0}]);
+  return{kind:'Definite integral of a polynomial (signed area)',
+    html:'Evaluate '+intg(a,b)+'('+expr+') dx',
+    graph:{xmin:a-.7,xmax:b+.7,alt:'Signed area under the curve',fns:[{f:f,cls:'c1',label:'f(x)'}],shade:{mode:'axis',f:f,a:a,b:b}},
+    val:fval(val),options:o.options,correct:o.correct,
+    hints:['A definite integral gives the signed area between the curve and the x-axis from x = '+a+' to x = '+b+'. Blue area counts positive, orange area counts negative.',
+      'First find an antiderivative: F(x) = '+p+'x³/3 + '+q+'x²/2 + '+c+'x (use the sign of each number).',
+      'Now compute F('+b+') − F('+a+'). Do not add them, and do not swap the order.'],
+    solution:'<p>F(x) = '+p+'x³/3 + '+q+'x²/2 + '+c+'x</p><p>F('+b+') = '+fh(Fb)+'</p><p>F('+a+') = '+fh(Fa)+'</p><p>Answer: F('+b+') − F('+a+') = '+fh(val)+'</p>',
+    methods:['Fundamental Theorem: antiderivative, then F(upper) − F(lower).','Split the interval where the curve crosses the axis if you want actual (unsigned) area.'],
+    exam:'Boards: show F(x) first, then substitute limits for full marks. CUET: watch the sign of the answer, because area below the axis is negative.'};
+}
+function genL3(r){
+  var a=pick(r,[1,2]),m=ri(r,2,6),x1=m/a;
+  var f=function(x){return a*x*x},g=function(x){return m*x};
+  var val=Fr(m*m*m,6*a*a);
+  var o=fracOpts(r,val,[Fr(m*m*m,3*a*a),Fr(m*m*m,2*a*a),Fr(m*m*m,6*a),Fr(m*m,6*a*a)]);
+  return{kind:'Area bounded by a parabola and a line',
+    html:'Find the area of the region bounded by the parabola y = '+(a===1?'':a)+'x<sup>2</sup> and the line y = '+m+'x.',
+    graph:{xmin:-.6,xmax:x1+.6,alt:'Region between a parabola and a line',fns:[{f:f,cls:'c1',label:'y = '+(a===1?'':a)+'x²'},{f:g,cls:'c2',label:'y = '+m+'x'}],shade:{mode:'between',top:g,bottom:f,a:0,b:x1}},
+    val:fval(val),options:o.options,correct:o.correct,
+    hints:['Look at the shaded region in the graph. The line is the upper boundary and the parabola is the lower boundary.',
+      'Find where the curves meet: set '+(a===1?'':a)+'x² = '+m+'x. The two intersection points are the limits of integration.',
+      'Area = ∫ (upper − lower) dx from x = 0 to x = '+fh(Fr(m,a))+', which is ∫ ('+m+'x − '+(a===1?'':a)+'x²) dx.'],
+    solution:'<p>Intersections: '+(a===1?'':a)+'x² = '+m+'x gives x = 0 and x = '+fh(Fr(m,a))+'.</p><p>Area = ∫ ('+m+'x − '+(a===1?'':a)+'x²) dx = [ '+m+'x²/2 − '+(a===1?'':a)+'x³/3 ] from 0 to '+fh(Fr(m,a))+'</p><p>Answer: '+fh(val)+'</p>',
+    methods:['Integrate (upper − lower) with respect to x.','Integrate with respect to y if the region is easier to describe as left and right curves.','Shortcut for y = x² and y = mx: area = m³/6.'],
+    exam:'Boards: a 4 to 6 mark question, and the diagram is part of the marks. CUET and JEE Main: use the m³/(6a²) shortcut to save time and verify with the long method.'};
+}
+function genL4(r){
+  var n=ri(r,2,3),c=ri(r,1,3),b=ri(r,1,2);
+  var f=function(x){return x*Math.pow(x*x+c,n)};
+  var top=Math.pow(b*b+c,n+1),low=Math.pow(c,n+1);
+  var val=Fr(top-low,2*(n+1));
+  var o=fracOpts(r,val,[Fr(top-low,n+1),Fr(top,2*(n+1)),Fr(top-low,2),Fr(Math.pow(b,2*(n+1)),2*(n+1))]);
+  var inner='(x<sup>2</sup> + '+c+')'+sup(n);
+  return{kind:'Definite integral by substitution',
+    html:'Evaluate '+intg(0,b)+' x'+inner+' dx',
+    graph:{xmin:-.5,xmax:b+.5,alt:'Area under x times a power of x squared plus a constant',fns:[{f:f,cls:'c1',label:'f(x)'}],shade:{mode:'axis',f:f,a:0,b:b}},
+    val:fval(val),options:o.options,correct:o.correct,
+    hints:['Look inside the bracket: x² + '+c+'. Its derivative is 2x, and there is an x outside. That match is the sign to substitute.',
+      'Let u = x² + '+c+'. Then du = 2x dx, so x dx = du/2. Change the limits too: x = 0 gives u = '+c+', x = '+b+' gives u = '+(b*b+c)+'.',
+      'The integral becomes (1/2) ∫ u'+sup(n)+' du from u = '+c+' to u = '+(b*b+c)+'. Integrate and substitute the new limits.'],
+    solution:'<p>u = x² + '+c+', du = 2x dx. Limits: 0 → '+c+', '+b+' → '+(b*b+c)+'.</p><p>I = (1/2) ∫ u'+sup(n)+' du = [ u'+sup(n+1)+' / '+(2*(n+1))+' ] from '+c+' to '+(b*b+c)+'</p><p>= ('+(b*b+c)+sup(n+1)+' − '+c+sup(n+1)+') / '+(2*(n+1))+' = '+fh(val)+'</p>',
+    methods:['u-substitution, changing the limits at the same time (fastest).','Substitute, find the antiderivative in x, then use the original limits.','Expand (x² + '+c+')'+sup(n)+' and integrate term by term. It works but is slow.'],
+    exam:'JEE Main: this pattern (a function and its derivative sitting together) appears every year. Boards: always rewrite the limits after substitution.'};
+}
+function ee(k){return 'e'+sup(k)}
+function genL5(r){
+  var v=ri(r,0,4),q;
+  if(v<=1){
+    var k=v===0?2:3,c=k-1,den=k*k;
+    var mk=function(sg,co,d){return '('+(co===1?'':co)+ee(k)+' '+sg+' 1) / '+d};
+    var o=strOpts(r,mk('+',c,den),[mk('−',c,den),mk('+',k,den),mk('+',c,k),mk('+',k+1,den)]);
+    q={kind:'Integration by parts: polynomial × exponential',html:'Evaluate '+intg(0,1)+' x e'+sup(k+'x')+' dx',
+      graph:{xmin:-.3,xmax:1.3,alt:'Area under x e to the kx',fns:[{f:function(x){return x*Math.exp(k*x)},cls:'c1',label:'f(x) = x·e^'+k+'x'}],shade:{mode:'axis',f:function(x){return x*Math.exp(k*x)},a:0,b:1}},
+      val:(c*Math.exp(k)+1)/den,options:o.options,correct:o.correct,
+      hints:['The integrand is a product of two different kinds of functions: x (algebraic) and e^'+k+'x (exponential). That calls for integration by parts.',
+        'Use LIATE: algebraic comes before exponential, so take u = x and dv = e^'+k+'x dx. Then du = dx and v = e^'+k+'x / '+k+'.',
+        'Apply ∫u dv = uv − ∫v du: [x e^'+k+'x / '+k+'] from 0 to 1 − (1/'+k+') ∫ e^'+k+'x dx from 0 to 1.'],
+      solution:'<p>u = x, dv = e^'+k+'x dx, so v = e^'+k+'x/'+k+'.</p><p>I = [x e^'+k+'x/'+k+']<sub>0</sub><sup>1</sup> − (1/'+k+')∫<sub>0</sub><sup>1</sup> e^'+k+'x dx = e'+sup(k)+'/'+k+' − (e'+sup(k)+' − 1)/'+den+'</p><p>= '+mk('+',c,den)+'</p>',
+      methods:['Integration by parts with u = x (LIATE).','Tabular method: differentiate x down to 0, integrate e^'+k+'x repeatedly, alternate signs.','Differentiation under the integral sign works too, but is slower here.'],
+      exam:'JEE Main: standard by-parts MCQ, usually with limits so the answer is a clean expression in e. Boards: 4 mark question.'};
+  }else{
+    var bank=[
+      {t:'Evaluate '+intg(0,'π/2')+' x cos x dx',f:function(x){return x*Math.cos(x)},a:0,b:Math.PI/2,xt:[{v:0,l:'0'},{v:Math.PI/4,l:'π/4'},{v:Math.PI/2,l:'π/2'}],lbl:'f(x) = x cos x',ans:'π/2 − 1',w:['π/2 + 1','1 − π/2','π/2','π − 1'],val:Math.PI/2-1,
+       sol:'<p>u = x, dv = cos x dx, v = sin x.</p><p>I = [x sin x] from 0 to π/2 − ∫ sin x dx = π/2 − 1</p>',h3:'Take u = x, dv = cos x dx, v = sin x. Then I = [x sin x] − ∫ sin x dx over 0 to π/2.'},
+      {t:'Evaluate '+intg(0,'π')+' x sin x dx',f:function(x){return x*Math.sin(x)},a:0,b:Math.PI,xt:[{v:0,l:'0'},{v:Math.PI/2,l:'π/2'},{v:Math.PI,l:'π'}],lbl:'f(x) = x sin x',ans:'π',w:['−π','2π','π/2','0'],val:Math.PI,
+       sol:'<p>u = x, dv = sin x dx, v = −cos x.</p><p>I = [−x cos x] from 0 to π + ∫ cos x dx = π + 0 = π</p>',h3:'Take u = x, dv = sin x dx, v = −cos x. Then I = [−x cos x] + ∫ cos x dx over 0 to π.'},
+      {t:'Evaluate '+intg(1,'e')+' x ln x dx',f:function(x){return x*Math.log(x)},a:1,b:Math.E,xt:[{v:1,l:'1'},{v:2,l:'2'},{v:Math.E,l:'e'}],lbl:'f(x) = x ln x',ans:'(e² + 1) / 4',w:['(e² − 1) / 4','(e² + 1) / 2','e² / 2','(e² − 1) / 2'],val:(Math.E*Math.E+1)/4,
+       sol:'<p>u = ln x, dv = x dx, v = x²/2.</p><p>I = [x² ln x / 2] from 1 to e − ∫ x/2 dx = e²/2 − (e² − 1)/4 = (e² + 1)/4</p>',h3:'Here ln x is easier to differentiate than to integrate, so take u = ln x and dv = x dx, giving v = x²/2.'}
+    ];
+    var it=bank[v-2],o2=strOpts(r,it.ans,it.w);
+    var lo=it.a===1?0.5:-0.3;
+    q={kind:'Integration by parts: algebraic × trigonometric or logarithmic',html:it.t,
+      graph:{xmin:lo,xmax:it.b+.4,alt:'Area under the curve',xticks:it.xt,fns:[{f:it.f,cls:'c1',label:it.lbl}],shade:{mode:'axis',f:it.f,a:it.a,b:it.b}},
+      val:it.val,options:o2.options,correct:o2.correct,
+      hints:['The integrand is a product of two different types of function, so think integration by parts: ∫u dv = uv − ∫v du.',
+        'Choose u by LIATE (Logarithmic, Inverse trig, Algebraic, Trig, Exponential). The earlier one in the list becomes u.',it.h3],
+      solution:it.sol,
+      methods:['Integration by parts with u chosen by LIATE.','Tabular method for repeated by-parts problems.'],
+      exam:'JEE Main: asked directly, with limits. Check the answer by estimating the area from the graph: is your value close to the shaded region?'};
+  }
+  return q;
+}
+function genL6(r){
+  var v=ri(r,0,2);
+  if(v===0){
+    var a=ri(r,1,3),p=pick(r,[-5,-4,-3,-2,2,3,4,5]),q=ri(r,1,6),c=pick(r,[-4,-3,-2,2,3,4]);
+    var f=function(x){return p*x*x*x+q*x*x+c*x};
+    var val=Fr(2*q*a*a*a,3);
+    var o=fracOpts(r,val,[Fr(0),Fr(q*a*a*a,3),fadd(fadd(Fr(2*p*a*a*a*a,4),Fr(2*q*a*a*a,3)),Fr(2*c*a*a,2))]);
+    var expr=poly([{c:p,e:3},{c:q,e:2},{c:c,e:1}]);
+    return{kind:'Integral over a symmetric interval (odd and even parts)',
+      html:'Evaluate '+intg('−'+a,a)+'('+expr+') dx',
+      graph:{xmin:-a-.5,xmax:a+.5,alt:'Curve over a symmetric interval',fns:[{f:f,cls:'c1',label:'f(x)'}],shade:{mode:'axis',f:f,a:-a,b:a}},
+      val:fval(val),options:o.options,correct:o.correct,
+      hints:['Look at the limits: −'+a+' to '+a+'. Symmetric limits are a signal to check which terms are odd and which are even.',
+        'Odd terms (x³ and x) give zero over symmetric limits. For even terms, ∫ from −a to a equals 2 × ∫ from 0 to a.',
+        'Only '+q+'x² survives. Compute 2 ∫ from 0 to '+a+' of '+q+'x² dx.'],
+      solution:'<p>x³ and x are odd, so their integrals over [−'+a+', '+a+'] are 0.</p><p>I = 2 ∫<sub>0</sub><sup>'+a+'</sup> '+q+'x² dx = 2 · '+q+'·'+a+'³/3 = '+fh(val)+'</p>',
+      methods:['Odd/even property: zero for odd terms, double for even terms.','Brute force: find the antiderivative and substitute both limits. It gives the same answer but takes much longer.'],
+      exam:'JEE Main and Advanced: the question looks heavy but collapses in two lines. Spotting symmetry is the whole skill. Boards: property-based question worth 4 marks.'};
+  }
+  var info;
+  if(v===1){
+    var A=ri(r,1,3),Bv=A+ri(r,2,5),S=A+Bv;
+    var fo=pick(r,[{n:'x²',f:function(t){return t*t},d:function(s){return s+'<sup>2</sup>'}},{n:'√x',f:Math.sqrt,d:function(s){return '√'+s}},{n:'x³',f:function(t){return t*t*t},d:function(s){return s+'<sup>3</sup>'}}]);
+    var g=function(x){var u=fo.f(x),w=fo.f(S-x);return u/(u+w)};
+    var gm=function(x){return g(S-x)};
+    var fx=fo.d('x'),fs=fo.d('('+S+' − x)');
+    var val2=Fr(Bv-A,2);
+    var o2=fracOpts(r,val2,[Fr(Bv-A),Fr(S,2),Fr(Bv-A,4)]);
+    return{kind:'King\'s property: ∫ f(x)/(f(x) + f(a + b − x))',
+      html:'Evaluate '+intg(A,Bv)+' <span class="fr"><i>'+fx+'</i><i>'+fx+' + '+fs+'</i></span> dx',
+      graph:{xmin:A,xmax:Bv,alt:'The integrand and its mirror image add up to 1',fns:[{f:g,cls:'c1',label:'g(x)'},{f:gm,cls:'c2',dash:true,label:'g('+S+' − x), mirror'}],shade:{mode:'axis',f:g,a:A,b:Bv}},
+      val:fval(val2),options:o2.options,correct:o2.correct,
+      hints:['The limits '+A+' and '+Bv+' add up to '+S+', and the second function in the denominator is f('+S+' − x). That is the classic pattern for King\'s property.',
+        'Use ∫<sub>a</sub><sup>b</sup> h(x) dx = ∫<sub>a</sub><sup>b</sup> h(a + b − x) dx. Call the integral I and write I again with x replaced by '+S+' − x.',
+        'Add the two forms of I. The fractions have the same denominator and the numerators add up to it, so 2I = ∫ 1 dx over the interval. In the graph, the solid and dashed curves add up to exactly 1.'],
+      solution:'<p>I = ∫ g(x) dx and, replacing x by '+S+' − x, I = ∫ g('+S+' − x) dx.</p><p>Adding: 2I = ∫<sub>'+A+'</sub><sup>'+Bv+'</sup> 1 dx = '+(Bv-A)+'</p><p>I = '+fh(val2)+'</p>',
+      methods:['King\'s property (a + b − x). One line once you see it.','Direct integration is not possible here, so the trick is the only practical method.'],
+      exam:'JEE Main and Advanced: very common. The answer is always (b − a)/2 for this pattern, so a quick sanity check is half the interval length.'};
+  }
+  var n=ri(r,2,5);
+  var gg=function(x){var s=Math.pow(Math.sin(x),n),c2=Math.pow(Math.cos(x),n);return s/(s+c2)};
+  var gmm=function(x){return gg(Math.PI/2-x)};
+  var o3=strOpts(r,'π/4',['π/2','π/8','1/2','0','1']);
+  return{kind:'King\'s property on [0, π/2]',
+    html:'Evaluate '+intg(0,'π/2')+' <span class="fr"><i>sin<sup>'+n+'</sup> x</i><i>sin<sup>'+n+'</sup> x + cos<sup>'+n+'</sup> x</i></span> dx',
+    graph:{xmin:0,xmax:Math.PI/2,xticks:[{v:0,l:'0'},{v:Math.PI/4,l:'π/4'},{v:Math.PI/2,l:'π/2'}],alt:'The integrand and its mirror image add up to 1',fns:[{f:gg,cls:'c1',label:'g(x)'},{f:gmm,cls:'c2',dash:true,label:'g(π/2 − x)'}],shade:{mode:'axis',f:gg,a:0,b:Math.PI/2}},
+    val:Math.PI/4,options:o3.options,correct:o3.correct,
+    hints:['The limits are 0 and π/2, and sin and cos swap under x → π/2 − x. That points to King\'s property.',
+      'Replace x by π/2 − x. Then sin x becomes cos x and cos x becomes sin x, so you get a second integral with cos in the numerator.',
+      'Add both forms: 2I = ∫ 1 dx from 0 to π/2 = π/2. The graph shows the two curves adding to 1 at every x.'],
+    solution:'<p>I = ∫ sin<sup>'+n+'</sup>x/(sin<sup>'+n+'</sup>x + cos<sup>'+n+'</sup>x) dx and, using x → π/2 − x, I = ∫ cos<sup>'+n+'</sup>x/(sin<sup>'+n+'</sup>x + cos<sup>'+n+'</sup>x) dx.</p><p>2I = ∫<sub>0</sub><sup>π/2</sup> 1 dx = π/2, so I = π/4.</p>',
+    methods:['King\'s property (a + b − x), the intended method.','Notice the answer does not depend on n. That is itself a useful check.'],
+    exam:'JEE Advanced: often appears with n as a parameter or with tan and cot. The answer is π/4 for every n.'};
+}
+/* ---------- Labs: theory you play with ---------- */
+var LABS={};
+LABS[1]={title:'Area Machine',
+  task:'Slide t to grow the shaded area. The orange dot rides on F(x). Compare the two numbers.',
+  controls:[{id:'n',label:'Power n',min:1,max:4,step:1,val:2},{id:'t',label:'Stop at t',min:0,max:3,step:.1,val:1}],
+  goal:'Set n = 3 and t = 2.',
+  render:function(v){
+    var n=+v.n,t=+v.t,f=function(x){return Math.pow(x,n)},F=function(x){return Math.pow(x,n+1)/(n+1)};
+    var top=Math.max(f(3),F(3))*1.08,area=numInt(f,0,t);
+    return{fig:drawGraph({xmin:0,xmax:3,yfix:[-top*.06,top],alt:'Area under x to the power n and its antiderivative',
+      fns:[{f:f,cls:'c1',label:'f(x) = x^'+n},{f:F,cls:'c2',dash:true,label:'F(x) = x^'+(n+1)+' / '+(n+1)}],
+      shade:{mode:'axis',f:f,a:0,b:t},
+      extra:function(sx,sy){return '<circle class="g-dot2" cx="'+sx(t)+'" cy="'+sy(F(t))+'" r="6"/>'}}),
+      read:rd(['Shaded area (0 to '+fmt(t)+'): <b>'+fmt(area)+'</b>','F('+fmt(t)+') = <b>'+fmt(F(t))+'</b>','Same number every time.']),
+      done:n===3&&Math.abs(t-2)<1e-9};
+  },
+  theory:'<p>The area under f from 0 to t depends on t, and its rate of growth at t is f(t). So the area function is an <b>antiderivative</b> F(t).</p><p><b>Power rule:</b> ∫ x<sup>n</sup> dx = x<sup>n+1</sup> / (n+1) + C, for n ≠ −1.</p><p>Why + C? Slide F up or down and its slope does not change, so every shifted copy is also an antiderivative.</p>'};
+
+LABS[2]={title:'Riemann Rain',
+  task:'Rectangles estimate the area under f(x) = x² + 1 from 0 to 3. More rectangles means a better estimate. Compare the three methods.',
+  controls:[{id:'N',label:'Rectangles',min:1,max:100,step:1,val:4},{id:'m',label:'Height taken at',opts:[{v:'left',l:'Left'},{v:'mid',l:'Middle'},{v:'right',l:'Right'}],val:'left'}],
+  goal:'Get the error below 0.1.',
+  render:function(v){
+    var N=+v.N,m=v.m,h=3/N,f=function(x){return x*x+1},sum=0,i,xi;
+    for(i=0;i<N;i++){xi=m==='left'?i*h:m==='right'?(i+1)*h:(i+.5)*h;sum+=f(xi)*h}
+    var err=Math.abs(12-sum);
+    return{fig:drawGraph({xmin:0,xmax:3.2,yfix:[-.8,11],alt:'Rectangles under the curve',fns:[{f:f,cls:'c1',label:'f(x) = x² + 1'}],
+      extra:function(sx,sy){var s='',k,x;for(k=0;k<N;k++){x=m==='left'?k*h:m==='right'?(k+1)*h:(k+.5)*h;
+        s+='<rect class="g-rect" style="stroke-width:'+(N>40?0:1)+'" x="'+sx(k*h).toFixed(1)+'" y="'+sy(f(x)).toFixed(1)+'" width="'+(sx((k+1)*h)-sx(k*h)).toFixed(1)+'" height="'+(sy(0)-sy(f(x))).toFixed(1)+'"/>'}return s}}),
+      read:rd(['Rectangles add up to <b>'+fmt3(sum)+'</b>','Exact area: <b>12</b>','Error: <b>'+fmt3(err)+'</b>']),
+      done:err<0.1};
+  },
+  theory:'<p>A <b>Riemann sum</b> adds up thin rectangles. The <b>definite integral</b> is what the sum approaches as the number of rectangles goes to infinity.</p><p>You do not need infinite rectangles: by the <b>Fundamental Theorem</b>, ∫<sub>a</sub><sup>b</sup> f(x) dx = F(b) − F(a). Here F(x) = x³/3 + x, so F(3) − F(0) = 12.</p><p>Area below the x-axis counts as negative.</p>'};
+
+LABS[3]={title:'Region Builder',
+  task:'The line y = mx and the parabola y = ax² enclose a region. Change m and a, and watch how the area changes.',
+  controls:[{id:'a',label:'a (parabola)',min:1,max:3,step:1,val:1},{id:'m',label:'m (line slope)',min:2,max:6,step:1,val:3}],
+  goal:'Make the area exactly 36.',
+  render:function(v){
+    var a=+v.a,m=+v.m,x1=m/a,f=function(x){return a*x*x},g=function(x){return m*x},area=m*m*m/(6*a*a);
+    return{fig:drawGraph({xmin:-.4,xmax:6.6,yfix:[-3,38],alt:'Region between a parabola and a line',
+      fns:[{f:f,cls:'c1',label:'y = '+(a===1?'':a)+'x²'},{f:g,cls:'c2',label:'y = '+m+'x'}],
+      shade:{mode:'between',top:g,bottom:f,a:0,b:x1},
+      extra:function(sx,sy){var s='',i,x;for(i=0;i<14;i++){x=x1*(i+.5)/14;s+='<line class="g-strip" x1="'+sx(x)+'" x2="'+sx(x)+'" y1="'+sy(f(x))+'" y2="'+sy(g(x))+'"/>'}return s}}),
+      read:rd(['They meet at x = 0 and x = <b>'+fmt(x1)+'</b>','Area = ∫ (mx − ax²) dx = m³ / (6a²) = <b>'+fmt(area)+'</b>']),
+      done:Math.abs(area-36)<1e-9};
+  },
+  theory:'<p>To find the area between two curves, slice it into thin vertical strips. Each strip has height (upper − lower), so <b>Area = ∫ (upper − lower) dx</b> between the intersection points.</p><p>Always find the intersections first. They become your limits. For y = ax² and y = mx the area works out to m³ / (6a²).</p>'};
+
+LABS[4]={title:'Two Worlds',
+  task:'The same area lives in two coordinate systems. Move b and c, and compare the two shaded areas. Substituting u = x² + c carries one into the other.',
+  controls:[{id:'b',label:'Upper limit b',min:.5,max:2,step:.1,val:1},{id:'c',label:'Constant c',min:1,max:3,step:1,val:1}],
+  goal:'Set b = 2.',
+  render:function(v){
+    var b=+v.b,c=+v.c,f=function(x){return x*Math.pow(x*x+c,2)},h=function(u){return u*u/2},u2=b*b+c;
+    var A=numInt(f,0,b),B=numInt(h,c,u2);
+    var f1=drawGraph({xmin:0,xmax:2.2,yfix:[-5,110],alt:'x-world graph',fns:[{f:f,cls:'c1',label:'x-world: x(x² + c)²'}],shade:{mode:'axis',f:f,a:0,b:b}});
+    var f2=drawGraph({xmin:0,xmax:7.5,yfix:[-1.5,27],alt:'u-world graph',fns:[{f:h,cls:'c2',label:'u-world: u² / 2'}],shade:{mode:'axis',f:h,a:c,b:u2}});
+    return{fig:'<div class="twin">'+f1+f2+'</div>',
+      read:rd(['x from 0 to '+fmt(b)+' becomes u from '+c+' to '+fmt(u2),'x-world area: <b>'+fmt(A)+'</b>','u-world area: <b>'+fmt(B)+'</b>']),
+      done:Math.abs(b-2)<1e-9};
+  },
+  theory:'<p><b>Substitution</b> is the reverse of the chain rule. Spot an inner function whose derivative is also present: here x² + c has derivative 2x.</p><p>Let u = x² + c, so du = 2x dx. <b>Change the limits too</b>: x = a becomes u = a² + c. The area stays the same, only the picture changes, which is exactly what you just saw.</p>'};
+
+LABS[5]={title:'Rectangle Trick',
+  task:'A curve from the origin to a moving point splits a rectangle into a blue part and an orange part. Slide t and watch what the two parts add up to.',
+  controls:[{id:'t',label:'Point u = t',min:.2,max:4,step:.2,val:1}],
+  goal:'Slide t all the way to 4.',
+  render:function(v){
+    var t=+v.t,f=Math.sqrt,ft=f(t),A=2/3*Math.pow(t,1.5),B=Math.pow(t,1.5)/3;
+    return{fig:drawGraph({xmin:-.2,xmax:4.4,yfix:[-.12,2.35],alt:'Rectangle split by a curve',fns:[{f:f,cls:'c1',label:'v = √u'}],
+      shade:{mode:'axis',f:f,a:0,b:t},
+      extra:function(sx,sy,P){var pts=[],i,u;for(i=0;i<=40;i++){u=t*i/40;pts.push([sx(u),sy(f(u))])}
+        var s='<path class="g-neg" d="'+P([[sx(0),sy(0)]].concat(pts,[[sx(0),sy(ft)]]))+'Z"/>';
+        s+='<rect class="g-box" x="'+sx(0)+'" y="'+sy(ft)+'" width="'+(sx(t)-sx(0))+'" height="'+(sy(0)-sy(ft))+'"/>';
+        if(t>=1)s+='<text class="g-leg" x="'+sx(t*.62)+'" y="'+sy(ft*.22)+'">A</text><text class="g-leg" x="'+sx(t*.1)+'" y="'+sy(ft*.8)+'">B</text>';
+        return s}}),
+      read:rd(['A = ∫ v du = <b>'+fmt3(A)+'</b>','B = ∫ u dv = <b>'+fmt3(B)+'</b>','A + B = <b>'+fmt3(A+B)+'</b>','u · v = <b>'+fmt3(t*ft)+'</b>']),
+      done:t>=3.99};
+  },
+  theory:'<p>The two coloured areas always fill the rectangle: <b>∫ v du + ∫ u dv = uv</b>. Rearranged, this is <b>integration by parts</b>:</p><p>∫ u dv = uv − ∫ v du</p><p>Pick u as the part that gets simpler when differentiated. LIATE gives the order: Logarithmic, Inverse trig, Algebraic, Trig, Exponential.</p>'};
+
+LABS[6]={title:'Mirror Mirror',
+  task:'Pick any x. The solid curve at x and at 6 − x are partners. Check their sum for several different x.',
+  controls:[{id:'x',label:'x',min:1,max:5,step:.25,val:2}],
+  goal:'Try 4 different values of x.',
+  init:function(){return{seen:{}}},
+  render:function(v,st){
+    var x=+v.x,S=6,g=function(t){var p=t*t,q=(S-t)*(S-t);return p/(p+q)};
+    st.seen[x]=1;
+    var y1=g(x),y2=g(S-x);
+    return{fig:drawGraph({xmin:1,xmax:5,yfix:[-.05,1.08],alt:'The integrand and its partner add up to one',
+      fns:[{f:g,cls:'c1',label:'g(x)'},{f:function(t){return g(S-t)},cls:'c2',dash:true,label:'g(6 − x)'}],
+      shade:{mode:'axis',f:g,a:1,b:5},
+      extra:function(sx,sy){return '<line class="g-lim" x1="'+sx(x)+'" x2="'+sx(x)+'" y1="'+sy(0)+'" y2="'+sy(y1)+'"/><line class="g-lim" x1="'+sx(S-x)+'" x2="'+sx(S-x)+'" y1="'+sy(0)+'" y2="'+sy(y2)+'"/><circle class="g-dot" cx="'+sx(x)+'" cy="'+sy(y1)+'" r="6"/><circle class="g-dot2" cx="'+sx(S-x)+'" cy="'+sy(y2)+'" r="6"/>'}}),
+      read:rd(['g('+fmt(x)+') = <b>'+fmt3(y1)+'</b>','g('+fmt(S-x)+') = <b>'+fmt3(y2)+'</b>','Sum = <b>'+fmt3(y1+y2)+'</b>','So the area is half of 4 = <b>2</b>']),
+      done:Object.keys(st.seen).length>=4};
+  },
+  theory:'<p><b>King\'s property:</b> ∫<sub>a</sub><sup>b</sup> f(x) dx = ∫<sub>a</sub><sup>b</sup> f(a + b − x) dx.</p><p>When the integrand is f(x) / (f(x) + f(a + b − x)), the partner term adds up with it to exactly 1 at every x. So 2I = ∫ 1 dx = b − a, and <b>I = (b − a) / 2</b>.</p><p>Spot the pattern: the limits add up to a + b, and the same expression reappears with x replaced by a + b − x.</p>'};
+
+
+var LEVELS=[
+  {id:1,name:'Power Rule',tag:'BOARDS',base:10,gen:genL1,pos:[90,720],blurb:'Why does the power rule work? Find out by growing an area.',boss:'Power Golem'},
+  {id:2,name:'Definite Integrals',tag:'BOARDS · CUET',base:15,gen:genL2,pos:[250,615],blurb:'Add up rectangles and watch them become an integral.',boss:'Riemann Slime'},
+  {id:3,name:'Area Between Curves',tag:'BOARDS · CUET',base:20,gen:genL3,pos:[110,505],blurb:'Slice a region into strips and measure it.',boss:'Region Wraith'},
+  {id:4,name:'Substitution',tag:'JEE MAIN',base:25,gen:genL4,pos:[250,395],blurb:'Move an area between two coordinate worlds.',boss:'Substitution Sphinx'},
+  {id:5,name:'Integration by Parts',tag:'JEE MAIN',base:30,gen:genL5,pos:[110,285],blurb:'Split a rectangle into two areas to discover the formula.',boss:'Parts Hydra'},
+  {id:6,name:'Symmetry and King\'s Rule',tag:'JEE ADVANCED',base:40,gen:genL6,pos:[250,175],blurb:'Mirror an integrand and watch the hard part vanish.',boss:'King of Symmetry'}
+];
+MQ.register({
+  id:'integrals',num:7,name:'Integrals',unit:'Calculus',
+  levels:LEVELS,labs:LABS,
+  dailyPlan:[2,3,4,4,5,5,6,6,1,6],
+  symbols:[['∫',170,760],['Σ',40,590],['π',310,500],['dx',150,445],['eˣ',300,300],['f(x)',50,330],['∂',200,240],['lim',270,105]]
+});
+})();
+
+</script>
+<script>
+"use strict";
+/* Game engine: screens and rules shared by every chapter.
+   Screens: home (13 chapters) > map (one chapter) > node (one level) > lab / play.
+   A chapter only supplies data through MQ.register(); nothing here is chapter specific. */
+(function(){
+var $=function(s){return document.querySelector(s)};
+var el={chips:$('#chips'),today:$('#today'),main:$('#main')};
+var view='home',CH=null,nodeId=1,session=null,cur=null,labState=null;
+
+/* ---------- helpers ---------- */
+function levelOf(ch,k){return ch.levels[k-1]}
+function autoPos(n,i){var y=n===1?450:720-(545/(n-1))*i;return[i%2===0?100:250,Math.round(y)]}
+function posOf(ch,i){return ch.levels[i].pos||autoPos(ch.levels.length,i)}
+function chapterDone(ch){return ch.levels.every(function(L){return nstars(ch.id,L.id)>0})}
+
+/* ---------- top bar and today panel ---------- */
+function renderChips(){
+  el.chips.innerHTML='<span class="chip num">'+flame()+streak()+' <small>day streak</small></span><span class="chip num">'+S.points+' <small>pts</small></span><span class="chip">'+rank().name+'</span>';
+}
+function renderToday(){
+  var n=S.days[dkey(0)]||0,pct=Math.min(100,n/50*100),locked=n>=50,rk=rank();
+  var nextTxt=rk.next?(rk.next[0]-S.points)+' pts to '+rk.next[1]:'Top rank reached';
+  var b=Object.keys(S.badges).filter(function(k){return BADGES[k]}).map(function(k){return '<span class="badge">'+BADGES[k]+'</span>'}).join('')||'<span class="eyebrow">Badges appear here as you earn them</span>';
+  var done=S.daily[dkey(0)];
+  el.today.className='card today'+(locked?' locked':'');
+  el.today.innerHTML='<div class="eyebrow">Today</div><h2 class="num">'+n+' / 50 correct</h2><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="50" aria-valuenow="'+Math.min(n,50)+'"><span style="width:'+pct+'%"></span></div>'
+   +'<p>'+(locked?'Today\'s streak is locked in. Extra answers still earn points.':(50-n)+' more correct answers to lock today\'s streak. Every chapter counts toward it.')+'</p>'
+   +'<div class="rankrow"><span>Rank <b>'+rk.name+'</b></span><span class="num">'+nextTxt+'</span></div>'
+   +'<div class="badges">'+b+'</div>'
+   +'<button class="daily-btn" data-act="daily"><span>Daily Challenge<br><small>10 mixed questions, same for everyone today</small></span><span>'+(done?'Replay':'+100 bonus')+'</span></button>';
+}
+
+/* ---------- screen: home map with all chapters ---------- */
+function wrap2(t){if(t.length<=16)return[t];var w=t.split(' '),best=1,bd=1e9,k;for(k=1;k<w.length;k++){var d=Math.abs(w.slice(0,k).join(' ').length-w.slice(k).join(' ').length);if(d<bd){bd=d;best=k}}return[w.slice(0,best).join(' '),w.slice(best).join(' ')]}
+function focusHome(){var n=el.main.querySelector('.pulse')||el.main.querySelector('.node.open');if(n&&n.scrollIntoView)n.scrollIntoView({block:'center'})}
+function homePos(i,n){var y=1330-i*(1190/(n-1));return[Math.round(180+70*Math.sin(i*1.25)),Math.round(y)]}
+function renderHome(){
+  var list=MQ.list,n=list.length,H=1460,s='<svg viewBox="0 0 360 '+H+'" class="map" role="group" aria-label="Class 12 maths chapter map">';
+  s+='<rect class="m-land" x="14" y="16" width="332" height="'+(H-32)+'" rx="70"/>';
+  var rng=mulberry(11),i,x,y;
+  for(i=0;i<16;i++){x=24+rng()*312;y=40+rng()*(H-90);s+=(i%3===0?'<path class="m-hill" d="M'+x+' '+y+'q22-44 46 0z"/>':'<polygon class="m-tree" points="'+(x-7)+','+y+' '+x+','+(y-18)+' '+(x+7)+','+y+'"/>')}
+  var syms=['∫','Σ','π','dx','eˣ','f(x)','∂','lim','Δ','θ'];
+  for(i=0;i<syms.length;i++){s+='<text class="m-sym" x="'+(30+((i*97)%250))+'" y="'+(90+i*135)+'">'+syms[i]+'</text>'}
+  var pos=list.map(function(c,k){return homePos(k,n)}),prev=[pos[0][0],1420];
+  for(i=0;i<n;i++){
+    var my=(prev[1]+pos[i][1])/2,rd=MQ.chapters[list[i].id];
+    s+='<path class="m-road'+(rd&&chapterDone(rd)?' done':'')+'" d="M'+prev[0]+' '+prev[1]+'C'+prev[0]+' '+my+' '+pos[i][0]+' '+my+' '+pos[i][0]+' '+pos[i][1]+'"/>';
+    prev=pos[i];
+  }
+  s+='<g><path d="M'+pos[0][0]+' 1440v-26" stroke="var(--ink)" stroke-width="2.4"/><path d="M'+pos[0][0]+' 1414l22 7-22 7z" fill="var(--warm)"/></g>';
+  var first=-1;
+  for(i=0;i<n;i++){var r0=MQ.chapters[list[i].id];if(r0&&!chapterDone(r0)){first=i;break}}
+  list.forEach(function(c,k){
+    var ch=MQ.chapters[c.id],x=pos[k][0],y=pos[k][1],ready=!!ch,st=ready?chStars(ch):0,max=ready?ch.levels.length*3:0;
+    var cls='node '+(ready?(st>0?'clear':'open'):'locked'),left=x<=180,tx=left?x+38:x-38,anc=left?'start':'end',ln=wrap2(c.name);
+    s+='<g class="'+cls+'" data-chapter="'+c.id+'" tabindex="0" role="button" aria-label="Chapter '+c.num+' '+c.name+(ready?'':', coming soon')+'">';
+    if(first===k)s+='<circle class="pulse" cx="'+x+'" cy="'+y+'" r="30"/>';
+    s+='<circle class="base" cx="'+x+'" cy="'+y+'" r="27"/><text class="n" x="'+x+'" y="'+(y+7)+'">'+c.num+'</text>';
+    ln.forEach(function(t,j){s+='<text class="t" x="'+tx+'" y="'+(y-(ln.length>1?15:3)+j*15)+'" text-anchor="'+anc+'">'+t+'</text>'});
+    s+='<text class="tg" x="'+tx+'" y="'+(y+(ln.length>1?16:13))+'" text-anchor="'+anc+'">'+(ready?c.unit.toUpperCase()+' · '+st+'/'+max+' STARS':c.unit.toUpperCase()+' · SOON')+'</text></g>';
+  });
+  s+='</svg>';
+  var open=readyChapters().length,stars=0,mx=0;
+  readyChapters().forEach(function(c){stars+=chStars(c);mx+=c.levels.length*3});
+  return '<div class="viewhead"><div><div class="eyebrow">Class 12 Maths</div><h2>Pick a chapter</h2></div><p class="sub num">'+open+' of '+n+' chapters open · '+stars+' / '+mx+' stars</p></div><div class="map-wrap">'+s+'</div>';
+}
+
+/* ---------- screen: one chapter map ---------- */
+function renderMap(){
+  var ch=CH,L,s='<svg viewBox="0 0 360 840" class="map" role="group" aria-label="'+ch.name+' level map">';
+  s+='<path class="m-land" d="M30 780Q8 640 50 560Q20 440 60 360Q28 240 78 150Q118 40 200 62Q322 40 336 170Q352 300 310 400Q346 520 300 620Q332 740 240 806Q130 832 30 780Z"/>';
+  s+='<path class="m-hill" d="M260 770q30-56 62 0z"/><path class="m-hill" d="M20 470q26-52 54 0z"/><path class="m-hill" d="M300 330q26-52 54 0z"/><path class="m-hill" d="M40 210q26-52 54 0z"/>';
+  [[300,700],[316,712],[60,640],[44,652],[320,560],[40,380],[320,240],[70,100]].forEach(function(p){s+='<polygon class="m-tree" points="'+(p[0]-7)+','+p[1]+' '+p[0]+','+(p[1]-18)+' '+(p[0]+7)+','+p[1]+'"/>'});
+  (ch.symbols||[]).forEach(function(t){s+='<text class="m-sym" x="'+t[1]+'" y="'+t[2]+'">'+t[0]+'</text>'});
+  var prev=[200,800],i,pos;
+  for(i=0;i<ch.levels.length;i++){
+    L=ch.levels[i];pos=posOf(ch,i);var my=(prev[1]+pos[1])/2;
+    s+='<path class="m-road'+(nstars(ch.id,L.id)?' done':'')+'" d="M'+prev[0]+' '+prev[1]+'C'+prev[0]+' '+my+' '+pos[0]+' '+my+' '+pos[0]+' '+pos[1]+'"/>';
+    prev=pos;
+  }
+  s+='<path class="m-road'+(chapterDone(ch)?' done':'')+'" d="M'+prev[0]+' '+prev[1]+'C'+prev[0]+' 120 180 130 180 96"/>';
+  s+='<g class="m-castle"><rect x="156" y="52" width="48" height="38"/><rect x="152" y="40" width="12" height="18"/><rect x="196" y="40" width="12" height="18"/><rect x="171" y="38" width="18" height="22"/></g><text class="tg" x="180" y="108" text-anchor="middle">'+(chapterDone(ch)?'CHAPTER CLEARED':'CLEAR EVERY LEVEL')+'</text>';
+  s+='<g><path d="M196 800v-26" stroke="var(--ink)" stroke-width="2.4"/><path d="M196 774l22 7-22 7z" fill="var(--warm)"/></g><text class="tg" x="196" y="818" text-anchor="middle">START</text>';
+  var curId=0,k;
+  for(k=1;k<=ch.levels.length;k++){if(unlocked(ch.id,k)&&!nstars(ch.id,k)){curId=k;break}}
+  ch.levels.forEach(function(L,idx){
+    var p=posOf(ch,idx),x=p[0],y=p[1],st=nstars(ch.id,L.id),op=unlocked(ch.id,L.id),cl=st>0;
+    var cls='node '+(cl?'clear':op?'open':'locked'),left=x<180,tx=left?x+38:x-38,anc=left?'start':'end';
+    s+='<g class="'+cls+'" data-node="'+L.id+'" tabindex="0" role="button" aria-label="Level '+L.id+' '+L.name+(op?'':', locked')+'">';
+    if(curId===L.id)s+='<circle class="pulse" cx="'+x+'" cy="'+y+'" r="30"/>';
+    s+='<circle class="base" cx="'+x+'" cy="'+y+'" r="27"/>';
+    s+=op?'<text class="n" x="'+x+'" y="'+(y+7)+'">'+L.id+'</text>':'<g transform="translate('+(x-9)+','+(y-10)+')"><rect x="2" y="9" width="14" height="11" rx="2" fill="var(--muted)"/><path d="M5 9V6a4 4 0 0 1 8 0v3" fill="none" stroke="var(--muted)" stroke-width="2"/></g>';
+    s+='<text class="t" x="'+tx+'" y="'+(y-3)+'" text-anchor="'+anc+'">'+L.name+'</text><text class="tg" x="'+tx+'" y="'+(y+13)+'" text-anchor="'+anc+'">'+L.tag+'</text>';
+    for(var j=0;j<3;j++)s+='<g transform="translate('+(x-27+j*18)+','+(y+31)+')">'+starSvg(j<st,16)+'</g>';
+    s+='</g>';
+  });
+  s+='</svg>';
+  return '<button class="back" data-act="home">← All chapters</button><div class="viewhead"><div><div class="eyebrow">Chapter '+ch.num+' · '+ch.unit+'</div><h2>'+ch.name+'</h2></div><p class="sub">Tap a level. Play the Lab, beat the Quest, then train in the Arena.</p></div><div class="map-wrap">'+s+'</div>';
+}
+
+/* ---------- screen: one level ---------- */
+function renderNode(){
+  var L=levelOf(CH,nodeId),n=nd(CH.id,nodeId),stars='',lab=CH.labs[nodeId];
+  for(var j=0;j<3;j++)stars+=starSvg(j<n.stars,22);
+  function step(num,act,title,sub,state,dis){return '<button class="step" data-act="'+act+'"'+(dis?' disabled':'')+'><span class="stepn">'+num+'</span><span class="stepx"><b>'+title+'</b><small>'+sub+'</small></span><span class="stepst">'+state+'</span></button>'}
+  return '<button class="back" data-act="map">← '+CH.name+'</button><div class="nodehead"><div class="monwrap">'+monster(nodeId,1)+'</div><div><div class="eyebrow">Level '+L.id+' · '+L.tag+'</div><h2>'+L.name+'</h2><p class="sub">'+L.blurb+'</p><div class="starrow">'+stars+'</div></div></div>'
+   +'<div class="steps">'
+   +step(1,'lab','Lab: '+lab.title,'Play with the idea. A theory card unlocks when you finish.',n.lab?'Done':'Play',false)
+   +step(2,'quest','Quest: beat '+L.boss,'5 questions, 5 lives. The last one is the boss and counts double.',n.stars?'Best '+n.stars+' of 3':(n.lab?'Fight':'Locked'),!n.lab)
+   +step(3,'arena','Endless Arena','Infinite fresh questions with combo points. Great for streaks.',n.stars?'Train':'Locked',!n.stars)
+   +'</div>';
+}
+
+/* ---------- screen: Lab ---------- */
+function labControlsHtml(L,vals){
+  return L.controls.map(function(c){
+    if(c.opts)return '<div class="ctl"><span class="ctll">'+c.label+'</span><div class="seg" role="group" aria-label="'+c.label+'">'+c.opts.map(function(o){return '<button type="button" class="segb'+(vals[c.id]===o.v?' on':'')+'" data-seg="'+c.id+'" data-v="'+o.v+'">'+o.l+'</button>'}).join('')+'</div></div>';
+    return '<div class="ctl"><label class="ctll" for="ctl-'+c.id+'">'+c.label+' <b class="num" id="val-'+c.id+'">'+vals[c.id]+'</b></label><input type="range" id="ctl-'+c.id+'" data-ctl="'+c.id+'" min="'+c.min+'" max="'+c.max+'" step="'+c.step+'" value="'+vals[c.id]+'"></div>';
+  }).join('');
+}
+function renderLab(){
+  var L=CH.labs[nodeId],P=levelOf(CH,nodeId);
+  labState={vals:{},st:L.init?L.init():{},done:nd(CH.id,nodeId).lab};
+  L.controls.forEach(function(c){labState.vals[c.id]=c.val});
+  el.main.innerHTML='<button class="back" data-act="node">← Level '+nodeId+'</button><div class="labcard"><div class="eyebrow">Lab · Level '+nodeId+' · '+P.name+'</div><h2>'+L.title+'</h2><p class="sub">'+L.task+'</p>'
+   +'<figure class="graph" id="labFig"></figure><div class="read" id="labRead"></div><div class="controls">'+labControlsHtml(L,labState.vals)+'</div>'
+   +'<div class="goal" id="labGoal"></div><div class="theory" id="labTheory" hidden><div class="eyebrow">Theory card</div>'+L.theory+'</div><div class="tools"><button class="btn primary" data-act="quest" id="labGo" hidden>Start the Quest</button></div></div>';
+  updateLab();
+}
+function updateLab(){
+  var L=CH.labs[nodeId],r=L.render(labState.vals,labState.st);
+  $('#labFig').innerHTML=r.fig;$('#labRead').innerHTML=r.read;
+  if(r.done&&!labState.done){
+    labState.done=true;var n=nd(CH.id,nodeId),first=!n.lab;n.lab=true;if(first){S.points+=20;toast('Lab complete! +20 pts');award('lab')}
+    save();renderChips();renderToday();
+  }
+  var g=$('#labGoal');
+  g.className='goal'+(labState.done?' ok':'');
+  g.innerHTML='<span class="chk">'+(labState.done?'✓':'')+'</span><span>Goal: '+L.goal+'</span>';
+  $('#labTheory').hidden=!labState.done;$('#labGo').hidden=!labState.done;
+}
+
+/* ---------- questions and sessions ---------- */
+function newQ(){
+  var ss=session,ch,lv,rng;
+  if(ss.mode==='daily'){
+    var ready=readyChapters(),pr=mulberry(hash(ss.date+':c'+ss.i));
+    ch=ready[Math.floor(pr()*ready.length)];
+    lv=ch.dailyPlan[ss.i%ch.dailyPlan.length];rng=mulberry(hash(ss.date+':'+ss.i));
+  }else{ch=ss.ch;lv=ss.level;rng=Math.random}
+  var q=levelOf(ch,lv).gen(rng);q.level=lv;
+  cur={ch:ch,q:q,hints:0,wrongs:0,bad:{},solved:false,revealed:false,armed:false,pts:0,bonus:0};
+}
+function startQuest(k){session={mode:'quest',ch:CH,level:k,i:0,total:5,lives:5,combo:0,bestCombo:0,correct:0,earned:0,done:false,failed:false};newQ();go('play')}
+function startArena(k){session={mode:'arena',ch:CH,level:k,combo:0,bestCombo:0,solved:0,earned:0};newQ();go('play')}
+function startDaily(){var d=dkey(0);session={mode:'daily',date:d,i:0,score:0,combo:0,bestCombo:0,bonus:!S.daily[d],finished:false};newQ();go('play')}
+function worth(){var q=cur.q,base=levelOf(cur.ch,q.level).base,w=Math.round(base*Math.max(.25,1-.25*(cur.hints+cur.wrongs)));return(session.mode==='quest'&&session.i===session.total-1)?w*2:w}
+
+/* ---------- screen: play (quest, arena, daily) ---------- */
+function renderPlay(){
+  var ss=session,q,L,done,i;
+  if(ss.mode==='daily'&&ss.finished){
+    var bonus=ss.bonus&&ss.score>=7?100:0;
+    return '<div class="sum"><div class="eyebrow">Daily Challenge complete</div><h2 class="num">'+ss.score+' / 10 solved clean</h2><p>'+(bonus?'Bonus +100 points added.':(ss.bonus?'Solve 7 or more without the solution to earn the +100 bonus.':'Bonus already collected today. Come back tomorrow for a new set.'))+'</p><div class="tools" style="justify-content:center"><button class="btn primary" data-act="home">Back to the map</button></div></div>';
+  }
+  if(ss.mode==='quest'&&ss.failed){
+    return '<div class="sum"><div class="monwrap big">'+monster(ss.level,1)+'</div><div class="eyebrow">Quest failed</div><h2>'+levelOf(ss.ch,ss.level).boss+' wins this round</h2><p>You solved '+ss.correct+' of '+ss.total+'. Open the Lab again if an idea felt shaky, then retry. Questions are new every time.</p><div class="tools" style="justify-content:center"><button class="btn" data-act="lab">Replay the Lab</button><button class="btn primary" data-act="quest">Retry quest</button></div></div>';
+  }
+  if(ss.mode==='quest'&&ss.done){
+    var lost=5-ss.lives,stars=lost<=1?3:lost<=3?2:1,st='';
+    for(i=0;i<3;i++)st+=starSvg(i<stars,40);
+    var nextOk=ss.level<ss.ch.levels.length;
+    return '<div class="sum"><div class="monwrap big">'+monster(ss.level,0)+'</div><div class="eyebrow">Boss defeated</div><h2>'+levelOf(ss.ch,ss.level).boss+' is down</h2><div class="starrow big">'+st+'</div><p class="num">+'+ss.earned+' points · best combo ×'+ss.bestCombo+(nextOk?' · Level '+(ss.level+1)+' unlocked':(chapterDone(ss.ch)?' · Chapter cleared':''))+'</p><div class="tools" style="justify-content:center"><button class="btn" data-act="arena">Endless Arena</button>'+(nextOk?'<button class="btn primary" data-node-go="'+(ss.level+1)+'">Next level</button>':'')+'<button class="btn" data-act="map">Map</button></div></div>';
+  }
+  q=cur.q;L=levelOf(cur.ch,q.level);done=cur.solved||cur.revealed;
+  var head='',pts='<span class="worth num">'+(done?(cur.solved?'+'+cur.pts+' pts':'0 pts'):'+'+worth()+' pts')+'</span>',cmb=ss.combo>=2?'<span class="combo num">Combo ×'+ss.combo+'</span>':'';
+  if(ss.mode==='quest'){
+    var boss=ss.i===ss.total-1,hp=Math.round((ss.total-ss.correct)/ss.total*100),hs='';
+    for(i=0;i<5;i++)hs+=heart(i<ss.lives);
+    head='<div class="battle"><div class="monwrap">'+monster(q.level,hp)+'</div><div class="bstat"><div class="eyebrow">'+L.boss+(boss?' · BOSS ROUND':'')+'</div><div class="hpbar" role="progressbar" aria-label="Boss health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+hp+'"><span style="width:'+hp+'%"></span></div><div class="hearts" aria-label="'+ss.lives+' lives left">'+hs+'</div></div></div>'
+     +'<div class="qhead"><span class="tag">Q '+(ss.i+1)+' / '+ss.total+(boss?' · x2':'')+'</span><span class="tag">'+L.tag+'</span>'+cmb+pts+'</div>';
+  }else{
+    var isA=ss.mode==='arena';
+    head='<button class="back" data-act="'+(isA?'node':'home')+'">← '+(isA?'Level '+ss.level:'All chapters')+'</button><div class="qhead">'+(isA?'<span class="tag">ENDLESS ARENA</span>':'<span class="tag">DAILY '+(ss.i+1)+'/10</span>')+'<span class="tag">'+L.tag+'</span><span class="eyebrow">'+cur.ch.name+' · '+L.name+'</span>'+cmb+pts+'</div>';
+  }
+  var opts='<div class="opts">'+q.options.map(function(o,j){
+    var cls='opt',dis='';
+    if(cur.bad[j])cls+=' bad';
+    if(done&&j===q.correct)cls+=' ok';
+    if(done||cur.bad[j])dis=' disabled';
+    return '<button class="'+cls+'" data-act="opt" data-i="'+j+'"'+dis+'><span class="k">'+'ABCD'[j]+'</span><span>'+o+'</span></button>';
+  }).join('')+'</div>';
+  var tools='<div class="tools">';
+  if(!done){
+    tools+='<button class="btn" data-act="hint"'+(cur.hints>=3?' disabled':'')+'>'+(cur.hints>=3?'No more hints':'Hint '+(cur.hints+1)+' of 3')+'</button>';
+    tools+='<button class="btn'+(cur.armed?' armed':'')+'" data-act="sol">'+(cur.armed?'Tap again: solution costs all points'+(ss.mode==='quest'?' and a life':''):'Show solution')+'</button>';
+  }else{
+    var last=(ss.mode==='quest'&&ss.i===ss.total-1)||(ss.mode==='daily'&&ss.i===9);
+    tools+='<button class="btn primary" data-act="next">'+(last?'Finish':'Next question')+'</button>';
+  }
+  tools+='</div>';
+  var ladder=cur.hints>0?'<div class="ladder">'+q.hints.slice(0,cur.hints).map(function(h,j){return '<div class="hint"><b>Hint '+(j+1)+'</b>'+h+'</div>'}).join('')+'</div>':'';
+  var fb='';
+  if(cur.solved)fb='<div class="fb ok">Correct. '+(cur.hints+cur.wrongs===0?'Clean solve, full points.':'Points reduced for '+(cur.hints+cur.wrongs)+' hint or wrong attempt'+(cur.hints+cur.wrongs>1?'s':'')+'.')+(cur.bonus?' Combo bonus +'+cur.bonus+'.':'')+'</div>';
+  else if(cur.revealed)fb='<div class="fb info solution">Full solution (no points for this one):'+q.solution+'</div>';
+  else if(cur.wrongs>0)fb='<div class="fb bad">Not this one.'+(ss.mode==='quest'?' You lost a life.':'')+' Read the question again, or open a hint before you try another option.</div>';
+  var deb='';
+  if(done)deb='<div class="debrief"><h4>What kind of question is this?</h4><p>'+q.kind+'</p><h4>Ways to solve it</h4><ul>'+q.methods.map(function(m){return '<li>'+m+'</li>'}).join('')+'</ul><h4>How exams ask it</h4><p>'+q.exam+'</p>'+(cur.solved?'<h4>Full solution</h4><div class="solution">'+q.solution+'</div>':'')+'</div>';
+  return head+'<p class="qtext">'+q.html+'</p><figure class="graph">'+drawGraph(q.graph,done)+'</figure>'+opts+tools+ladder+fb+deb;
+}
+
+/* ---------- routing and rendering ---------- */
+function renderMain(){
+  if(view==='home')el.main.innerHTML=renderHome();
+  else if(view==='map')el.main.innerHTML=renderMap();
+  else if(view==='node')el.main.innerHTML=renderNode();
+  else if(view==='lab')renderLab();
+  else el.main.innerHTML='<div class="card playcard">'+renderPlay()+'</div>';
+}
+function renderAll(){renderChips();renderToday();renderMain()}
+function go(v,id,ch){
+  if(ch)CH=ch;
+  if(id)nodeId=id;
+  view=v;
+  if(v==='home'||v==='map'||v==='node'){session=null;cur=null}
+  renderAll();
+  if(v==='home')focusHome();else window.scrollTo({top:0,behavior:'auto'});
+}
+
+/* ---------- scoring ---------- */
+function onSolved(){
+  var ss=session;cur.solved=true;
+  var base=worth(),clean=cur.hints===0&&cur.wrongs===0;
+  ss.combo++;if(ss.combo>ss.bestCombo)ss.bestCombo=ss.combo;
+  cur.bonus=ss.combo>=3?ss.combo*2:0;cur.pts=base+cur.bonus;
+  S.points+=cur.pts;S.total++;
+  var d=dkey(0),before=S.days[d]||0;S.days[d]=before+1;
+  if(ss.mode==='quest'){ss.correct++;ss.earned+=cur.pts}
+  if(ss.mode==='arena'){ss.solved++;ss.earned+=cur.pts}
+  if(ss.mode==='daily'&&clean)ss.score++;
+  if(before<50&&S.days[d]>=50)toast('50 solved. Today\'s streak is locked in!');
+  checkBadges();save();
+}
+function onMiss(){
+  var ss=session;ss.combo=0;
+  if(ss.mode==='quest'){ss.lives--;if(ss.lives<=0)ss.failed=true}
+  save();
+}
+function finishQuest(){
+  var ss=session,lost=5-ss.lives,stars=lost<=1?3:lost<=3?2:1,n=nd(ss.ch.id,ss.level);
+  var bonus=stars*20;S.points+=bonus;ss.earned+=bonus;
+  if(stars>n.stars)n.stars=stars;
+  award('boss');ss.done=true;save();
+}
+function nextQ(){
+  var ss=session;
+  if(ss.mode==='quest'){if(ss.i===ss.total-1){finishQuest();renderAll();return}ss.i++}
+  else if(ss.mode==='daily'){
+    if(ss.i===9){
+      ss.finished=true;
+      if(ss.bonus&&ss.score>=7){S.points+=100;S.daily[ss.date]={score:ss.score}}
+      else if(!S.daily[ss.date])S.daily[ss.date]={score:ss.score};
+      if(ss.score===10)award('perfect');
+      save();renderAll();return;
+    }
+    ss.i++;
+  }
+  newQ();renderAll();window.scrollTo({top:0,behavior:'auto'});
+}
+
+/* ---------- events ---------- */
+el.main.addEventListener('click',function(e){
+  var t=e.target;
+  var seg=t.closest('[data-seg]');
+  if(seg&&view==='lab'){labState.vals[seg.getAttribute('data-seg')]=seg.getAttribute('data-v');
+    var sibs=seg.parentNode.querySelectorAll('.segb');for(var q=0;q<sibs.length;q++)sibs[q].classList.toggle('on',sibs[q]===seg);updateLab();return}
+  var cn=t.closest('[data-chapter]');
+  if(cn){var cid=cn.getAttribute('data-chapter'),c=MQ.chapters[cid];
+    if(!c){var info=MQ.list.filter(function(x){return x.id===cid})[0];toast(info.name+' is coming soon.');return}
+    go('map',1,c);return}
+  var nn=t.closest('[data-node]');
+  if(nn){var k=+nn.getAttribute('data-node');if(!unlocked(CH.id,k)){toast('Beat Level '+(k-1)+' first to unlock this one.');return}go('node',k);return}
+  var ng=t.closest('[data-node-go]');if(ng){go('node',+ng.getAttribute('data-node-go'));return}
+  var b=t.closest('[data-act]');if(!b||b.disabled)return;
+  var act=b.getAttribute('data-act');
+  if(act==='home'){go('home');return}
+  if(act==='map'){go('map');return}
+  if(act==='node'){go('node');return}
+  if(act==='lab'){go('lab');return}
+  if(act==='quest'){startQuest(session&&session.mode==='quest'?session.level:nodeId);return}
+  if(act==='arena'){startArena(session&&session.level?session.level:nodeId);return}
+  if(!cur)return;
+  var done=cur.solved||cur.revealed;
+  if(act==='opt'&&!done){
+    var i=+b.getAttribute('data-i');cur.armed=false;
+    if(i===cur.q.correct)onSolved();else{cur.bad[i]=true;cur.wrongs++;onMiss()}
+    renderAll();
+  }else if(act==='hint'&&!done&&cur.hints<3){cur.hints++;cur.armed=false;renderMain()}
+  else if(act==='sol'&&!done){
+    if(!cur.armed){cur.armed=true;renderMain();return}
+    cur.revealed=true;onMiss();renderAll();
+  }else if(act==='next')nextQ();
+});
+el.main.addEventListener('input',function(e){
+  var r=e.target.closest('[data-ctl]');if(!r||view!=='lab')return;
+  var id=r.getAttribute('data-ctl');labState.vals[id]=r.value;
+  var vl=$('#val-'+id);if(vl)vl.textContent=r.value;updateLab();
+});
+el.main.addEventListener('keydown',function(e){
+  var n=e.target.closest&&e.target.closest('[data-node],[data-chapter]');
+  if(n&&(e.key==='Enter'||e.key===' ')){e.preventDefault();n.dispatchEvent(new MouseEvent('click',{bubbles:true}))}
+});
+el.today.addEventListener('click',function(e){if(e.target.closest('[data-act="daily"]'))startDaily()});
+
+renderAll();focusHome();
+window.MQ.debug={go:go,startQuest:startQuest,startArena:startArena,startDaily:startDaily,answer:function(){return cur&&cur.q.correct}};
+})();
+
+</script>
+</body>
+</html>
